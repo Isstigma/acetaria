@@ -1,0 +1,36 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+backend/.env
+frontend/.env
+backend/.env.*
+frontend/.env.*
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Vite
+frontend/dist/
+frontend/.vite/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+backend/.venv/
+
+# Editor
+.vscode/
+.idea/
+
+# Docker volumes (if you have any local bind mounts)
+data/

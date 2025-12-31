@@ -1,0 +1,128 @@
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(18, 18, 18, 0.95), rgba(18, 18, 18, 0.85));
+  backdrop-filter: blur(10px);
+}
+
+.topbarLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand {
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+}
+
+.brandMark { color: var(--accent); }
+
+.hsrBtn { border-radius: 14px; }
+
+.topbarRight {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.pillRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.divider {
+  width: 1px;
+  height: 26px;
+  background: var(--border);
+  opacity: 0.9;
+}
+
+/* Search */
+.searchWrap { display: inline-flex; align-items: center; }
+.searchInput {
+  width: 220px;
+  max-width: 40vw;
+  border-radius: 12px;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  background: rgba(16,16,18,0.65);
+  color: var(--text);
+  outline: none;
+}
+.searchInput:focus {
+  border-color: rgba(245,197,66,0.45);
+  box-shadow: 0 0 0 2px rgba(245,197,66,0.10);
+}
+
+/* Language dropdown */
+.langDropdown { position: relative; }
+
+.langTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(16,16,18,0.65);
+  color: var(--text);
+  cursor: pointer;
+}
+.langTrigger:hover { border-color: rgba(245,197,66,0.35); }
+
+.globe { opacity: 0.9; }
+.langShort { font-weight: 800; }
+.caret { color: var(--muted); }
+
+.langMenu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  width: 240px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(12,12,14,0.96);
+  box-shadow: var(--shadow);
+  padding: 8px;
+}
+.langItem {
+  width: 100%;
+  text-align: left;
+  padding: 10px 10px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 700;
+}
+.langItem:hover { background: rgba(245,197,66,0.08); }
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}

@@ -1,0 +1,27 @@
+
+.toolbarRowSplit {
+  justify-content: space-between;
+  width: 100%;
+}
+
+.toolbarLeft, .toolbarRight {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.tabFeed {
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgba(14,14,16,0.55);
+  overflow: hidden;
+}
+.feedRow {
+  padding: 14px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.feedRow:last-child { border-bottom: none; }
+.feedTitle { font-weight: 800; }
+.feedSummary { color: var(--muted); margin-top: 6px; }

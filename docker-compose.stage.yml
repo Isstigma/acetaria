@@ -54,7 +54,7 @@ services:
       - CORS_ORIGINS=*
       - ACETARIA_AUTO_SEED=0
     depends_on:
-      - postgres
+      - service-postgres
     labels:
       - traefik.enable=true
       - traefik.http.routers.backend.rule=Host(`acetaria-api.yznts.cc`)

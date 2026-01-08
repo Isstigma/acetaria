@@ -4,8 +4,14 @@ export function formatMetric(metric: Metric): string {
   if (metric.type === "cycles") {
     if (metric.cycles === 0) return "0-Cycle";
     return `${metric.cycles} cycles`;
+  } else if (metric.type === "time") {
+    return formatDuration(metric.timeMs);
+  } else if (metric.type === "points") {
+    return `${metric.points} points`;
+  } else if (metric.type === "av") {
+    return `AV ${metric.avValue}`;
   }
-  return formatDuration(metric.timeMs);
+  return "";
 }
 
 export function formatDuration(ms: number): string {

@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import random
 from datetime import datetime, timedelta, timezone
-from motor.motor_asyncio import AsyncIOMotorDatabase
-from app.core.db import get_db
+from app.core.db import get_session
 
 HSR_SLUG = "hsr"
 HSR_NAME = "Honkai: Star Rail"
@@ -13,15 +12,15 @@ def _cdn(path: str) -> str:
     return f"https://cdn.acetaria.example/{path}".replace("//", "//")
 
 
-async def _ensure_indexes(db: AsyncIOMotorDatabase) -> None:
-    await db.runs.create_index([("publishedAt", -1)])
-    await db.leaderboard_entries.create_index([("gameSlug", 1), ("modeSlug", 1), ("cycles", 1), ("limStd", 1)])
-    await db.leaderboard_entries.create_index([("gameSlug", 1), ("modeSlug", 1), ("timeMs", 1), ("limStd", 1)])
-    await db.team_entries.create_index([("entryId", 1)])
+async def _ensure_indexes(db) -> None: pass
+    # await db.runs.create_index([("publishedAt", -1)])
+    # await db.leaderboard_entries.create_index([("gameSlug", 1), ("modeSlug", 1), ("cycles", 1), ("limStd", 1)])
+    # await db.leaderboard_entries.create_index([("gameSlug", 1), ("modeSlug", 1), ("timeMs", 1), ("limStd", 1)])
+    # await db.team_entries.create_index([("entryId", 1)])
 
 
 async def ensure_seeded() -> None:
-    db = get_db()
+    db = get_session()
     await _ensure_indexes(db)
     await seed_minimum(db)
 
@@ -31,7 +30,7 @@ async def ensure_seeded() -> None:
     await seed(db)
 
 
-async def seed_minimum(db: AsyncIOMotorDatabase) -> None:
+async def seed_minimum(db) -> None:
     """Idempotently upsert minimum docs needed for the frontend to work."""
     now = datetime.now(timezone.utc)
 
@@ -228,7 +227,7 @@ async def seed(db: AsyncIOMotorDatabase) -> None:
 
 
 async def _amain():
-    db = get_db()
+    db = get_session()
     await _ensure_indexes(db)
     await seed(db)
 

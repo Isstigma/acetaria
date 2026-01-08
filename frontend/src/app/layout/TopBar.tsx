@@ -39,7 +39,7 @@ export function TopBar() {
     <div className="topbar">
       <div className="topbarLeft">
         <button className="brand" onClick={() => nav("/")}>
-          <span className="brandMark">Acetaria</span>
+          <span className="brandMark">Acetaria🥬Alpha</span>
         </button>
 
         <Button
@@ -54,13 +54,13 @@ export function TopBar() {
 
       <div className="topbarRight">
         <div className="pillRow">
-          <Button variant="ghost">Challenges</Button>
-          <Button variant="ghost">Forums</Button>
-          <Button variant="ghost">Help</Button>
-          <Button variant="ghost">SUPPORTER</Button>
+          <Button hidden={true} variant="ghost">Challenges</Button>
+          <Button hidden={true} variant="ghost">Forums</Button>
+          <Button hidden={true} variant="ghost">Help</Button>
+          <Button variant="ghost">SUPPORT TBD</Button>
 
           <div className="searchWrap" role="search" aria-label="Search">
-            <input
+            <input  hidden={true}
               className="searchInput"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -69,10 +69,10 @@ export function TopBar() {
           </div>
         </div>
 
-        <div className="divider" />
+        <div hidden={true} className="divider" />
 
         <div className="pillRow">
-          <div className="langDropdown" ref={langRef}>
+          <div hidden={true} className="langDropdown" ref={langRef}>
             <button
               className="langTrigger"
               onClick={() => setLangOpen((s) => !s)}
@@ -103,8 +103,8 @@ export function TopBar() {
             ) : null}
           </div>
 
-          <Button variant="primary" onClick={() => void 0}>Log in</Button>
-          <Button variant="outline" onClick={() => void 0}>Sign up</Button>
+          <Button hidden={true} variant="primary" onClick={() => void 0}>Log in</Button>
+          <Button hidden={true} variant="outline" onClick={() => void 0}>Sign up</Button>
         </div>
       </div>
     </div>

@@ -18,7 +18,7 @@ export function HomePage() {
       <div className="sectionTitle">Latest Runs</div>
 
       {q.isLoading && <LoadingState label="Loading latest runs..." />}
-      {q.isError && <ErrorState title="Something went wrong" message={(q.error as any)?.message ?? "Failed to fetch"} />}
+      {q.isError && <ErrorState error={(q.error as any)?.message ?? "Failed to fetch"} />}
       {!q.isLoading && !q.isError && (!q.data?.items || q.data.items.length === 0) && (
         <EmptyState label="No runs yet. Seed the database." />
       )}

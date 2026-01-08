@@ -25,3 +25,53 @@
 .feedRow:last-child { border-bottom: none; }
 .feedTitle { font-weight: 800; }
 .feedSummary { color: var(--muted); margin-top: 6px; }
+
+.stageDropdown { position: relative; }
+
+.stageTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(9, 9, 10, 0.65);
+  color: var(--text);
+  cursor: pointer;
+}
+.stageTrigger:hover { border-color: rgba(245,197,66,0.35); }
+
+.stageShort { font-weight: 800; }
+.caret { color: var(--muted); }
+
+.stageMenu {
+  position: relative;
+  right: 0;
+  width: 240px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(12,12,14,0.96);
+  box-shadow: var(--shadow);
+  padding: 8px;
+  z-index: 9999;
+}
+.stageItem {
+  width: 100%;
+  text-align: left;
+  padding: 10px 10px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 700;
+}
+.stageItem:hover { background: rgba(245,197,66,0.08); }
+
+.stageSelection {
+  display: 'inline-block'; 
+  flex-direction: 'column';
+  gap: '8px';
+  margin-right: 15;
+}
+

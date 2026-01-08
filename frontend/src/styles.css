@@ -161,17 +161,17 @@ a { color: inherit; }
 .trSub { background: rgba(16,16,18,0.7); }
 .tdSub { padding: 0; }
 
-.subtableWrap { padding: 12px 14px 16px 14px; }
+.subtableWrap { padding: 5px 5px 5px 5px; }
 .subtableHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 
 .subtable { width: 100%; border-collapse: collapse; }
 .subtable .th { border-bottom: 1px solid rgba(255,255,255,0.08); }
 .subtable .td { border-bottom: 1px solid rgba(255,255,255,0.06); }
 
-.teamRow { display: inline-flex; gap: 6px; }
+.teamRow { display: inline-flex; gap: 12px; }
 .portraitSm {
-  width: 26px;
-  height: 26px;
+  width: 34px;
+  height: 34px;
   border-radius: 10px;
   border: 1px solid rgba(255,255,255,0.10);
   object-fit: cover;

@@ -1,15 +1,12 @@
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
+from sqlmodel import create_engine, SQLModel, Session
 from app.core.config import settings
 
-_client: AsyncIOMotorClient | None = None
+#connect_args = {"check_same_thread": False}#todo check if some multithreading issue occurs
+engine = create_engine(settings.db_url, echo=True)#todo echo=False or make it dependent on env: local or not idk
 
+def init_db():
+    SQLModel.metadata.create_all(engine)
 
-def get_client() -> AsyncIOMotorClient:
-    global _client
-    if _client is None:
-        _client = AsyncIOMotorClient(settings.mongo_uri)
-    return _client
-
-
-def get_db() -> AsyncIOMotorDatabase:
-    return get_client()[settings.db_name]
+def get_session():
+    with Session(engine) as session:
+        yield session

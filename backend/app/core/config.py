@@ -3,13 +3,12 @@ from typing import List
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore", env_file_encoding='utf-8')
 
-    mongo_uri: str = "mongodb://localhost:27017"
-    db_name: str = "acetaria"
+    db_url: str = "postgresql://username:password@localhost:5432/acetariaa"
     cors_origins: str = "http://localhost:5173"
     api_prefix: str = "/api/v1"
-    acetaria_auto_seed: int = 1
+    acetaria_auto_seed: int = 0
 
     @property
     def cors_origins_list(self) -> List[str]:

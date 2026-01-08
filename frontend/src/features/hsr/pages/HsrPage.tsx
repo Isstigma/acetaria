@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useModesQuery } from "../../games/queries";
 import { ModeSelector } from "../components/ModeSelector";
@@ -23,7 +23,7 @@ const TAB_ENDPOINTS: Record<Exclude<Tab, "Leaderboards">, string> = {
 type NavItem = { id: string; title: string; summary: string; createdAt: string };
 type StatsOut = {
   gameSlug: string;
-  modeSlug?: string | null;
+  modeId?: string | null;
   totalRuns: number;
   totalLeaderboardEntries: number;
   totalTeamEntries: number;
@@ -51,10 +51,10 @@ function TabList({ endpoint }: { endpoint: string }) {
   );
 }
 
-function TabStats({ modeSlug }: { modeSlug: string }) {
-  const endpoint = `${TAB_ENDPOINTS.Stats}?mode=${encodeURIComponent(modeSlug)}`;
+function TabStats({ modeId: modeId }: { modeId: string }) {
+  const endpoint = `${TAB_ENDPOINTS.Stats}?mode=${encodeURIComponent(modeId)}`;
   const q = useQuery({
-    queryKey: ["hsr-stats", modeSlug],
+    queryKey: ["hsr-stats", modeId],
     queryFn: () => apiGet<StatsOut>(endpoint),
   });
 
@@ -78,31 +78,27 @@ function TabStats({ modeSlug }: { modeSlug: string }) {
 export function HsrPage() {
   const modesQ = useModesQuery("hsr");
 
-  const rawModes = modesQ.data?.items ?? [];
-  // Remove legacy/broken modes that still contain "(Cycles)" / "(Time)".
+  const rawModes = modesQ.data ?? [];
   const modes = useMemo(() => {
     const filtered = rawModes.filter((m) => {
-      const badName = /\((cycles|time)\)\s*$/i.test(m.modeName);
-      const badSlug = /-(cycles|time)$/.test(m.modeSlug);
+      const badName = /\((cycles|time)\)\s*$/i.test(m.name);
+      const badSlug = /-(cycles|time)$/.test(m.id);
       return !badName && !badSlug;
     });
 
     // De-dup by modeSlug (defensive)
     const seen = new Set<string>();
-    return filtered.filter((m) => (seen.has(m.modeSlug) ? false : (seen.add(m.modeSlug), true)));
+    return filtered.filter((m) => (seen.has(m.id) ? false : (seen.add(m.id), true)));
   }, [rawModes]);
 
-  const latestMode = useMemo(() => {
-    return modes.find((m) => m.isLatest)?.modeSlug ?? modes[0]?.modeSlug ?? "";
-  }, [modes]);
-
-  const [modeSlug, setModeSlug] = useState<string>("");
+  const [modeId, setModeId] = useState<string>("");
+  const [modeEntryId, setModeEntryId] = useState<number>(0);
   const [tab, setTab] = useState<Tab>("Leaderboards");
 
-  useEffect(() => {
-    if (!modeSlug && latestMode) setModeSlug(latestMode);
-    if (modeSlug && modes.length && !modes.some((m) => m.modeSlug === modeSlug)) setModeSlug(latestMode);
-  }, [latestMode, modeSlug, modes]);
+  // useEffect(() => {
+  //   if (!modeId && latestMode) setModeEntryId(latestMode?.game_mode_entries?.[0]?.stage_id ?? 0);
+  //   if (modeId && modes.length && !modes.some((m) => m.id === modeId)) setModeId(latestMode?.id ?? "");
+  // }, [latestMode, modeId, modes]);
 
   return (
     <div className="page">
@@ -126,38 +122,23 @@ export function HsrPage() {
 
       {tab !== "Leaderboards" ? (
         tab === "Stats" ? (
-          <TabStats modeSlug={modeSlug} />
+          <TabStats modeId={modeId} />
         ) : (
           <TabList endpoint={TAB_ENDPOINTS[tab]} />
         )
       ) : (
         <>
-          <div className="panel">
-            <div className="panelHeader">
-              <div className="sectionTitle">Mode</div>
-            </div>
+          <ModeSelector
+            modes={modes}
+            modeId={modeId}
+            stageId={modeEntryId}
+            onModeStageChange={setModeEntryId}
+            onModeChange={setModeId}
+            isLoading={modesQ.isLoading}
+            isError={modesQ.isError}
+          />
 
-            <ModeSelector
-              modes={modes}
-              value={modeSlug}
-              onChange={setModeSlug}
-              isLoading={modesQ.isLoading}
-              isError={modesQ.isError}
-            />
-          </div>
-
-          <div className="toolbarRow toolbarRowSplit">
-            <div className="toolbarLeft">
-              <Button variant="ghost">Filter</Button>
-              <Button variant="ghost">0-Cycle</Button>
-              <Button variant="ghost">full stars</Button>
-            </div>
-            <div className="toolbarRight">
-              <Button variant="primary">Submit</Button>
-            </div>
-          </div>
-
-          <LeaderboardTable modeSlug={modeSlug} />
+          <LeaderboardTable stageId={modeEntryId} mode={rawModes.find(m => m.id === modeId)} />
         </>
       )}
     </div>

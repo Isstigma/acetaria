@@ -1,7 +1,7 @@
 ## Tech Stack
 - Frontend: React + TypeScript + Vite, React Router, TanStack Query
-- Backend: FastAPI + Motor (MongoDB async driver), Pydantic
-- Database: MongoDB
+- Backend: FastAPI + SQLModel (PostgreSQL), Pydantic
+- Database: Postgresql
 - Local/VPS: Docker + docker-compose
 - API prefix: `/api/v1`
 
@@ -24,7 +24,7 @@ docker-compose up --build
 
 - Frontend: http://localhost:5173
 - Backend: http://localhost:8000 (OpenAPI at /docs)
-- MongoDB: localhost:27017
+- Postgresql: 
 
 ### Seeding
 The backend auto-seeds on startup when `ACETARIA_AUTO_SEED=1` (default in compose).

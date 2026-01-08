@@ -12,7 +12,9 @@ export type Mode = {
   name: string;
   kind: "Unknown" |"Moc12" |"Pf" |"As" |"Aak1" |"Aak2" |"Aak3" |"Aacm" |"Aazz" 
   primary_score_kind: "cycles" | "time" | "points" | "av";
+  primary_score_reverse_sorting: boolean;
   secondary_score_kind: "cycles" | "time" | "points" | "av" | null;
+  secondary_score_reverse_sorting: boolean | null;
   game_mode_entries: GameModeEntry[];
   // name: string;
   // playMetricType: "cycles" | "time";

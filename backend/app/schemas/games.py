@@ -14,7 +14,9 @@ class GameModeOut(BaseModel):
   kind: GameModeKindEnum | None
   name: str | None
   primary_score_kind: ResultKindEnum | None
+  primary_score_reverse_sorting: bool | None
   secondary_score_kind: ResultKindEnum | None
+  secondary_score_reverse_sorting: bool | None
   game_mode_entries: list["GameModeEntryOut"]
 
 class GameModeEntryOut(BaseModel):

@@ -1,13 +1,4 @@
 services:
-  mongo:
-    image: mongo:7
-    container_name: acetaria_mongo
-    restart: unless-stopped
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-
   backend:
     build:
       context: ./backend
@@ -20,7 +11,7 @@ services:
       - MONGO_URI=mongodb://mongo:27017
       - DB_NAME=acetaria
       - CORS_ORIGINS=http://localhost:5173
-      - ACETARIA_AUTO_SEED=1
+      - ACETARIA_AUTO_SEED=0
     depends_on:
       - mongo
     ports:

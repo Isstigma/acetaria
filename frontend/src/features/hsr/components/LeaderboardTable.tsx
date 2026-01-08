@@ -40,12 +40,18 @@ export function LeaderboardTable({ stageId, mode }: { stageId: number, mode: Mod
     const stageRunsForChar = stageRuns.data
     ?.filter((run) => run.team.units.some(u => u.char_id === char.id))
     ?.sort((a, b) => {
-      const prime =a.primary_score - b.primary_score;
-      
-      if(prime !== 0) return prime;
+      if(a.primary_score - b.primary_score !== 0) {
+        if(selectedMode?.primary_score_reverse_sorting) {
+          return b.primary_score - a.primary_score;
+        }
+        return a.primary_score - b.primary_score;
+      }
       
       if(a.secondary_score !== null && b.secondary_score !== null 
         && a.secondary_score !== b.secondary_score) {
+        if(selectedMode?.secondary_score_reverse_sorting) {
+          return b.secondary_score - a.secondary_score;
+        }
         return a.secondary_score - b.secondary_score;
       }
 
@@ -64,11 +70,14 @@ export function LeaderboardTable({ stageId, mode }: { stageId: number, mode: Mod
       const bestLtdScore = getCostValueFromRunById(best, ltdCostId);
       const runStdScore = getCostValueFromRunById(run, stdCostId);
       const bestStdScore = getCostValueFromRunById(best, stdCostId);
-      if (best === null 
-        || run.primary_score < best.primary_score) {
+      if (best === null || best.primary_score === null
+        || (selectedMode?.primary_score_reverse_sorting ? run.primary_score > best.primary_score : run.primary_score < best.primary_score)) {
         return run;
       } else if (run.primary_score === best.primary_score 
-        && run.secondary_score && best.secondary_score && run.secondary_score < best.secondary_score) {
+        && run.secondary_score && best.secondary_score && (
+          selectedMode?.secondary_score_reverse_sorting 
+            ? run.secondary_score > best.secondary_score 
+            : run.secondary_score < best.secondary_score)) {
         return run;
       } else if (
         run.primary_score === best.primary_score 
@@ -81,7 +90,7 @@ export function LeaderboardTable({ stageId, mode }: { stageId: number, mode: Mod
         return run;
       }
       return best;
-    }, {primary_score: 999, run_costs: [] as RunCost[]} as Run | null);
+    }, {primary_score: null, run_costs: [] as RunCost[]} as unknown as Run | null);
 
     const res = {
       char: char,
@@ -106,18 +115,36 @@ export function LeaderboardTable({ stageId, mode }: { stageId: number, mode: Mod
         const bStd = b.bestStdScore ?? Number.POSITIVE_INFINITY;
         return aStd - bStd;
       }
+      if(selectedMode?.secondary_score_reverse_sorting) {
+        return bLtd - aLtd;
+      }
       return aLtd - bLtd;
+    }
+    if(selectedMode?.primary_score_reverse_sorting) {
+      return bScore - aScore;
     }
     return aScore - bScore;
   });
   
-  console.log(stageCharRuns);
+  // console.log(stageCharRuns);
   return (
     <div className="panel">
       <div className="panelHeader">
         <div className="sectionTitle" style={{display: 'inline-block', flexDirection: 'column', gap: '8px', marginRight: 15}}>Leaderboards</div>
         <div className="muted small" style={{display: 'inline-block', flexDirection: 'column', gap: '8px', marginRight: 15}}>
-          Ranking: primary lowest {selectedMode?.primary_score_kind ?? "metric"}, tie-breaker lowest Lim/Std
+          Ranking: primary {
+          selectedMode?.primary_score_reverse_sorting ? "highest " : "lowest "
+          }{
+            selectedMode?.primary_score_kind ?? "metric"
+          }{
+            selectedMode?.secondary_score_kind === null 
+              ? "" 
+              : `, secondary ${selectedMode?.secondary_score_reverse_sorting 
+                ? "highest" 
+                : "lowest"} ${
+                  selectedMode?.secondary_score_kind ?? "metric"
+                }`
+          }, tie-breaker lowest Lim/Std
         </div>
       </div>
 
@@ -141,7 +168,7 @@ export function LeaderboardTable({ stageId, mode }: { stageId: number, mode: Mod
             </thead>
             <tbody>
               {stageCharRuns?.map((row) => {
-                // console.log(row);
+                console.log(row);
                 const isOpen = !!expanded[row.char.id];
                 return (
                   <>

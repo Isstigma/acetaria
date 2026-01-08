@@ -50,6 +50,10 @@ export function TopBar() {
         >
           Honkai: Star Rail
         </Button>
+        <div className="topbarRight">
+          <p className="betaTag">Brought to you by: nkenze, qkenze, kenz, кензая, кинза</p>
+        </div>
+
       </div>
 
       <div className="topbarRight">

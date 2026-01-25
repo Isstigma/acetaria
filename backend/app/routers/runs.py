@@ -1,3 +1,4 @@
+from typing import Annotated
 from fastapi import APIRouter, Depends, Path, Query
 from datetime import datetime, timezone
 
@@ -7,6 +8,7 @@ from app.schemas.common import Page
 from app.schemas.runs import LatestRunCardOut, MetricOut, RunOut
 from app.schemas.media import VideoOut
 from app.core.models import Run
+from app.core.enums import ElementEnum, PathEnum
 
 router = APIRouter(tags=["runs"])
 
@@ -57,7 +59,10 @@ async def latest_runs(
     return Page(items=items, page=1, pageSize=limit, total=0)#todo upd total
 
 @router.get("/runs/{stage_id}", response_model=list[RunOut])
-async def runs_by_entry(stage_id: int, session: Session = Depends(get_session)
+async def runs_by_entry(stage_id: int,                         
+                        session: Session = Depends(get_session),
+                        paths: Annotated[list[PathEnum] | None, Query()] = None,
+                        elements: Annotated[list[ElementEnum] | None, Query()] = None
     ):
     runs = session.exec(
             select(Run)

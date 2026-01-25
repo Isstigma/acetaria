@@ -6,5 +6,5 @@ export default defineConfig({
   server: {
     port: 5173,
     allowedHosts: ["localhost", "0.0.0.0", "acetaria.yznts.cc"],
-  }
+  },
 });

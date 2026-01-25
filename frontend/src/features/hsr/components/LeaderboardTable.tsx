@@ -8,17 +8,20 @@ import { EmptyState } from "../../../shared/ui/EmptyState";
 import { formatMetric } from "../../../shared/utils/format";
 import { TeamsSubtable } from "./TeamsSubtable";
 import { useGetAllCharsQuery, useGetAllCostsQuery, useGetAllLightconesQuery, useRunsByStageIdQuery } from "../../runs/queries";
-import { Mode, Run, RunCost } from "../../../shared/api/types";
+import { Character, Mode, Run, RunCost } from "../../../shared/api/types";
 import { getCostValueFromRunById } from "../../../shared/utils/utils";
 
 const STD_COST_NAME = "Standard 5 stars";
 const LTD_COST_NAME = "Limited 5 stars";
 
-export function LeaderboardTable({ stageId, mode }: { stageId: number, mode: Mode | undefined }) {
+export function LeaderboardTable({ stageId, mode, chars }: 
+  { 
+    stageId: number, 
+    mode: Mode | undefined ,
+    chars: Character[] | undefined,
+  }) {
   const selectedMode = mode;
   
-  const chars = useGetAllCharsQuery()
-
   const lightcones = useGetAllLightconesQuery();
 
   const costs = useGetAllCostsQuery();
@@ -38,7 +41,7 @@ export function LeaderboardTable({ stageId, mode }: { stageId: number, mode: Mod
     // console.log("No runs found for stageId:", stageId);
     return;
   } 
-  const stageCharRuns = chars.data?.map((char) => {
+  const stageCharRuns = chars?.map((char) => {
     const stageRunsForChar = stageRuns.data
     ?.filter((run) => run.team.units.some(u => u.char_id === char.id))
     ?.sort((a, b) => {
@@ -206,7 +209,7 @@ export function LeaderboardTable({ stageId, mode }: { stageId: number, mode: Mod
                           <TeamsSubtable 
                             entryId={row.char.id.toString()} 
                             runs={row.runs} 
-                            chars={chars.data}  
+                            chars={chars}  
                             lcs={lightcones.data}
                             ltdCostId={ltdCostId}
                             stdCostId={stdCostId}

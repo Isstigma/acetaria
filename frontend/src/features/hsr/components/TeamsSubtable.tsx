@@ -1,8 +1,4 @@
-import { useTeamsQuery } from "../queries";
-import { LoadingState } from "../../../shared/ui/LoadingState";
-import { ErrorState } from "../../../shared/ui/ErrorState";
 import { EmptyState } from "../../../shared/ui/EmptyState";
-import { formatMetric, platformLabel, formatDuration } from "../../../shared/utils/format";
 import { Character, Lightcone, Run } from "../../../shared/api/types";
 import { getCostValueFromRunById } from "../../../shared/utils/utils";
 

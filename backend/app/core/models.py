@@ -5,13 +5,14 @@ import uuid
 from fastapi import Depends, FastAPI, HTTPException, Query
 from sqlmodel import Field, Relationship, Session, UniqueConstraint, SQLModel, create_engine, select, text
 
-from app.core.enums import GameModeKindEnum, ResultFlags, ResultKindEnum, VideoPlatformEnum
+from app.core.enums import ElementEnum, GameModeKindEnum, PathEnum, ResultFlags, ResultKindEnum, VideoPlatformEnum
 
 class Char (SQLModel, table=True):
   __tablename__ = "char"
   id: int | None = Field(default=None, primary_key=True, nullable=False)#todo recheck if id really shouldn't have | None with default=None
   name: str = Field(default=None, nullable=False)
-  #path: todo
+  path: PathEnum = Field(default=None, nullable=False)
+  element: ElementEnum = Field(default=None, nullable=False)
   icon_url: str | None = Field (default=None)
   rarity: int = Field(default=None, nullable=False)
 
@@ -24,6 +25,7 @@ class Lightcone(SQLModel, table=True):
   id: int | None = Field(default=None, primary_key=True, nullable=False)#todo recheck if id really shouldn't have | None with default=None
   name: str = Field(default=None, nullable=False)
   rarity: int = Field(default=None, nullable=True)
+  path: PathEnum = Field(default=None, nullable=True) #nullable temporarily 
   icon_url: str = Field(default=None, nullable=False) 
 
   sig_of_char_id: int | None = Field(default=None, nullable=True, foreign_key="char.id")
@@ -39,7 +41,7 @@ class TeamUnitLink(SQLModel, table=True):
 
 
 class Unit(SQLModel, table=True): #a single element of a team. 
-  #In HSR - char with specific eidolon and optional lc with corresponding superimposition
+  #In HSR - char with specific eidolon and optional lc with a corresponding superimposition
   __tablename__ = "unit"
   __table_args__ = (UniqueConstraint("char_id", "char_eidolon", "lc_id", "lc_superimposition", name="unit_uidx"),)
 

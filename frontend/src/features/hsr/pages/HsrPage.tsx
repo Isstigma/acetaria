@@ -5,8 +5,9 @@ import { ModeSelector } from "../components/ModeSelector";
 import { LeaderboardTable } from "../components/LeaderboardTable";
 import { Button } from "../../../shared/ui/Button";
 import { apiGet } from "../../../shared/api/client";
-import type { Page } from "../../../shared/api/types";
+import type { Character, Page } from "../../../shared/api/types";
 import "./hsr.css";
+import { useGetAllCharsQuery } from "../../runs/queries";
 
 const TABS = ["Leaderboards", "News", "Guides", "Resources", "Forums", "Streams", "Stats"] as const;
 type Tab = (typeof TABS)[number];
@@ -95,6 +96,12 @@ export function HsrPage() {
   const [modeEntryId, setModeEntryId] = useState<number>(0);
   const [tab, setTab] = useState<Tab>("Leaderboards");
 
+  const [chars, setChars] = useState<Character[]>([]);
+
+  const apiChars = useGetAllCharsQuery();
+
+  useEffect(() => setChars(apiChars?.data ?? []), [apiChars?.data]);
+
   // useEffect(() => {
   //   if (!modeId && latestMode) setModeEntryId(latestMode?.game_mode_entries?.[0]?.stage_id ?? 0);
   //   if (modeId && modes.length && !modes.some((m) => m.id === modeId)) setModeId(latestMode?.id ?? "");
@@ -104,7 +111,7 @@ export function HsrPage() {
     <div className="page">
       <div className="pageHeader">
         <h1 className="h1">Honkai: Star Rail</h1>
-        <div className="subtle">MVP implementation. Tabs other than Leaderboards show dummy API-backed content.</div>
+        <div hidden={true} className="subtle">MVP implementation. Tabs other than Leaderboards show dummy API-backed content.</div>
       </div>
 
       <div className="tabs">
@@ -130,6 +137,7 @@ export function HsrPage() {
         <>
           <ModeSelector
             modes={modes}
+            chars={chars}
             modeId={modeId}
             stageId={modeEntryId}
             onModeStageChange={setModeEntryId}
@@ -138,7 +146,7 @@ export function HsrPage() {
             isError={modesQ.isError}
           />
 
-          <LeaderboardTable stageId={modeEntryId} mode={rawModes.find(m => m.id === modeId)} />
+          <LeaderboardTable stageId={modeEntryId} chars={chars} mode={rawModes.find(m => m.id === modeId)} />
         </>
       )}
     </div>

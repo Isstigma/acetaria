@@ -95,6 +95,73 @@ a { color: inherit; }
 .btnGhost { background: transparent; border-color: transparent; color: var(--muted); }
 .btnGhost:hover { color: var(--text); border-color: rgba(255,255,255,0.08); }
 
+#modal-root {
+  position:fixed;
+  width: 60vw;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+dialog {
+  margin: auto;
+  padding: 0 2ch 1ch;
+  background-color: #808080fa;
+  border-radius: 12px;
+  p {
+    font-size: 2em;
+    margin: 1ch;
+    font-weight: 700;
+  }
+}
+
+.portraitBtn {
+  width: 56px;
+  height: 56px;
+  padding: 0px;
+  margin:2px;
+  display: flexbox;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid var(--muted);
+  background: rgba(20, 20, 20, 0.6);
+  cursor: pointer;
+}
+
+.portraitBtn:hover { border-color: rgba(245,197,66,0.35); }
+
+.toggle-checkbox {
+  height: 0px;
+  width: 0px;
+  opacity: 0;
+}
+
+.toggle {
+  height: 20px;
+  width: 20px;
+  position: absolute;
+  border-radius: 10px;
+  background-color: #04f;
+  right: 50%;
+  transition: all .3s;
+}
+.toggle-switch {
+  border: solid 2px #04f;
+  position: relative;
+  display: inline-block;
+  border-radius: 20px;
+  padding: 3px;
+  width: 40px;
+  height: 20px;
+  }
+.toggled {
+  .toggle {
+    right: 3px;
+  }
+}
+
 .state {
   border: 1px solid var(--border);
   background: rgba(20,20,22,0.65);
@@ -186,7 +253,7 @@ a { color: inherit; }
   object-fit: cover;
 }
 
-.eidolonSm {  /*why isn't it used wtf*/
+.eidolonSm { 
   text-align: center;
   margin-top: -22px;
   margin-bottom: 5px;

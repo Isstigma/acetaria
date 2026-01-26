@@ -7,7 +7,7 @@ from app.core.db import get_session
 from app.schemas.common import Page
 from app.schemas.runs import LatestRunCardOut, MetricOut, RunOut
 from app.schemas.media import VideoOut
-from app.core.models import Run
+from app.core.models import Char, Run, Team, Unit
 from app.core.enums import ElementEnum, PathEnum
 
 router = APIRouter(tags=["runs"])
@@ -62,11 +62,24 @@ async def latest_runs(
 async def runs_by_entry(stage_id: int,                         
                         session: Session = Depends(get_session),
                         paths: Annotated[list[PathEnum] | None, Query()] = None,
-                        elements: Annotated[list[ElementEnum] | None, Query()] = None
+                        elements: Annotated[list[ElementEnum] | None, Query()] = None,
+                        chars: Annotated[list[int] | None, Query()] = None
     ):
-    runs = session.exec(
-            select(Run)
-            .where(Run.game_mode_entry_id == stage_id)
-            ).all()
+    query  = (select(Run)
+        .join(Team)
+        .join(Unit, Team.units)
+        .join(Char)
+        .where(Run.game_mode_entry_id == stage_id)
+    )
+
+    if chars is not None:
+        query = query.where(Char.id.in_(chars))
+    else: 
+        if paths is not None:
+            query = query.where(Char.path.in_(paths))
+        if elements is not None:
+            query = query.where(Char.element.in_(elements))
+
+    runs = session.exec(query).all()
 
     return runs

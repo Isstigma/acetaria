@@ -84,3 +84,11 @@ class LightconeOut(BaseModel):
     rarity: int
     icon_url: str
     sig_of_char_id: int | None
+
+class CharFilterIn(BaseModel): #todo, unused as of now
+    id: int | None
+    eFrom: int | None
+    eTo: int | None
+    lcId: int | None
+    sFrom: int | None
+    sTo: int | None

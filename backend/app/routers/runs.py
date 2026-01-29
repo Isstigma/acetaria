@@ -100,9 +100,6 @@ async def submit_run(
        lc_superimposition=unit.lc_superimposition).first()
     if existingUnit:
       unit = existingUnit
-    print('-------checking existing unit-------')
-    print(existingUnit)
-    print('------------------------------------')
     units.append(unit)
   team = Team(name=request.name, units=units)
   run = Run(
@@ -128,11 +125,18 @@ async def reject_submission(
   rejectedBy: str,
   session: Session = Depends(get_session)
 ):
-  pass
+  run = session.exec(select(Run).where(Run.id == submissionId)).first()
+  run.status = RunStatusEnum.Rejected
+  run.reviewed_by = rejectedBy
+  session.commit()
 
 @router.patch("/runs/approve/{submissionId}/{approvedBy}")
 async def approve_submission(
   submissionId: str,
+  approvedBy: str,
   session: Session = Depends(get_session)
 ):
-  pass
+  run = session.exec(select(Run).where(Run.id == submissionId)).first()
+  run.status = RunStatusEnum.Approved
+  run.reviewed_by = approvedBy
+  session.commit()

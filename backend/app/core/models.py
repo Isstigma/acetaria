@@ -5,7 +5,7 @@ import uuid
 from fastapi import Depends, FastAPI, HTTPException, Query
 from sqlmodel import Field, Relationship, Session, UniqueConstraint, SQLModel, create_engine, select, text
 
-from app.core.enums import ElementEnum, GameModeKindEnum, PathEnum, ResultFlags, ResultKindEnum, VideoPlatformEnum
+from app.core.enums import ElementEnum, GameModeKindEnum, PathEnum, ResultFlags, ResultKindEnum, RunStatusEnum, VideoPlatformEnum
 
 class Char (SQLModel, table=True):
   __tablename__ = "char"
@@ -104,6 +104,10 @@ class Run(SQLModel, table=True):
   __tablename__ = "run"
 
   id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+  status: RunStatusEnum | None = Field(default=RunStatusEnum.Pending, nullable=False, sa_column_kwargs={"server_default": RunStatusEnum.Pending})
+  submitted_at: datetime | None = Field(default_factory=datetime.utcnow, nullable=False)
+  submitted_by: str | None = Field(default=None, nullable=False)
+  reviewed_by: str | None = Field(default=None, nullable=True) 
 
   team: Team | None = Relationship(back_populates="runs")
   team_id: int | None = Field(default=None, nullable=False, foreign_key="team.id")
@@ -111,17 +115,15 @@ class Run(SQLModel, table=True):
   game_mode_entry: GameModeEntry | None = Relationship(back_populates="runs")
   game_mode_entry_id: int | None = Field(default=None, nullable=False, foreign_key="game_mode_entry.stage_id")
 
-  # primary_score: Decimal | None = Field(default=None, nullable=False, max_digits=8, decimal_places=3) #in future it may be more than 2 and an additional relation will be needed
-  # secondary_score: Decimal | None = Field(default=None, nullable=True, max_digits=8, decimal_places=3)
-
   primary_score: int | None = Field(default=None, nullable=False) #in future it may be more than 2 and an additional relation will be needed
   secondary_score: int | None = Field(default=None, nullable=True)
   flags: ResultFlags | None = Field(default=None, nullable=True)
+
   
   author: str | None = Field(default=None, nullable=False)
   link: str | None = Field(default=None, nullable=False)
   name: str | None = Field(default=None, nullable=True)
-  submitted_at: datetime | None = Field(default_factory=datetime.utcnow, nullable=False)
+  platform: VideoPlatformEnum | None = Field(default=None, nullable=True)
 
   run_costs: list["RunCost"] = Relationship(back_populates="run")
 

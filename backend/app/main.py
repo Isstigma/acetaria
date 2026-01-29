@@ -9,6 +9,7 @@ from app.routers.chars import router as chars_router
 from app.routers.lightcones import router as lcs_router
 from app.routers.gamemodes import router as gamemodes_router
 from app.routers.costs import router as costs_router
+from app.routers.submissions import router as submissions_router
 from app.seed import ensure_seeded
 from app.core.db import init_db
 from app.core.models import *
@@ -31,6 +32,7 @@ app.include_router(chars_router, prefix=settings.api_prefix)
 app.include_router(lcs_router, prefix=settings.api_prefix)
 app.include_router(gamemodes_router, prefix=settings.api_prefix)
 app.include_router(costs_router, prefix=settings.api_prefix)
+app.include_router(submissions_router, prefix=settings.api_prefix)
 # print(settings.model_dump())#todo remove
 
 @app.get("/healthz")

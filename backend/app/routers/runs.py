@@ -1,14 +1,14 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, Path, Query
+from fastapi import APIRouter, Body, Depends, Path, Query
 from datetime import datetime, timezone
 
 from sqlmodel import Session, Session, select
 from app.core.db import get_session
 from app.schemas.common import Page
-from app.schemas.runs import LatestRunCardOut, MetricOut, RunOut
+from app.schemas.runs import LatestRunCardOut, MetricOut, RunIn, RunOut
 from app.schemas.media import VideoOut
 from app.core.models import Char, Run, Team, Unit
-from app.core.enums import ElementEnum, PathEnum
+from app.core.enums import ElementEnum, PathEnum, RunStatusEnum
 
 router = APIRouter(tags=["runs"])
 
@@ -83,3 +83,56 @@ async def runs_by_entry(stage_id: int,
     runs = session.exec(query).all()
 
     return runs
+
+@router.post("/runs")
+async def submit_run(
+  session: Session = Depends(get_session),
+  request: RunIn = Body()
+):
+  units = []
+  for unit in request.units:
+    unit = Unit(char_id = unit.char_id, char_eidolon=unit.char_eidolon, 
+                lc_id=unit.lc_id, lc_superimposition=unit.lc_superimposition)
+    existingUnit = session.query(Unit).filter_by(
+       char_id=unit.char_id, 
+       char_eidolon=unit.char_eidolon,
+       lc_id=unit.lc_id, 
+       lc_superimposition=unit.lc_superimposition).first()
+    if existingUnit:
+      unit = existingUnit
+    print('-------checking existing unit-------')
+    print(existingUnit)
+    print('------------------------------------')
+    units.append(unit)
+  team = Team(name=request.name, units=units)
+  run = Run(
+    team=team,
+    game_mode_entry_id=request.stage_id,
+    primary_score=request.primary_score,
+    secondary_score=request.secondary_score,
+    flags=request.flags,
+    author=request.author,
+    link=request.link,
+    name=request.name,
+    status=RunStatusEnum.Pending,
+    submitted_by=request.submitted_by,
+  )
+  session.add(run)
+  session.commit()
+  session.refresh(run)
+  return {"run_id": run.id}
+
+@router.delete("/runs/reject/{submissionId}/{rejecteddBy}")
+async def reject_submission(
+  submissionId: str, 
+  rejectedBy: str,
+  session: Session = Depends(get_session)
+):
+  pass
+
+@router.patch("/runs/approve/{submissionId}/{approvedBy}")
+async def approve_submission(
+  submissionId: str,
+  session: Session = Depends(get_session)
+):
+  pass

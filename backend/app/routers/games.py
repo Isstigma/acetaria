@@ -8,16 +8,16 @@ from app.core.models import Char
 router = APIRouter(tags=["games"])
 
 
-@router.get("/games", response_model=Page[GameOut])
-async def list_games(page: int = 1, pageSize: int = 50, 
-                     session: Session = Depends(get_session)
-                     ):
-    q = {}
-    # total = await db.games.count_documents(q)
-    # cursor = db.games.find(q).skip((page - 1) * pageSize).limit(pageSize)
-    # items = [GameOut(**doc) async for doc in cursor]
-    items = session.exec(select(Char)).all()
-    return Page(items=items, page=page, pageSize=pageSize, total=0)#todo total
+# @router.get("/games", response_model=Page[GameOut])
+# async def list_games(page: int = 1, pageSize: int = 50, 
+#                      session: Session = Depends(get_session)
+#                      ):
+#     q = {}
+#     # total = await db.games.count_documents(q)
+#     # cursor = db.games.find(q).skip((page - 1) * pageSize).limit(pageSize)
+#     # items = [GameOut(**doc) async for doc in cursor]
+#     items = session.exec(select(Char)).all()
+#     return Page(items=items, page=page, pageSize=pageSize, total=0)#todo total
 
 
 # @router.get("/games/{gameSlug}/modes", response_model=Page[ModeOut])

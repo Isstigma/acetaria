@@ -4,7 +4,8 @@ from pydantic import BaseModel, Field
 from typing import Literal, Optional
 from datetime import datetime
 from app.schemas.media import VideoOut
-from app.core.enums import ResultFlags
+from app.core.enums import ResultFlags, RunStatusEnum
+from app.schemas.common import UnitModel
 
 
 class MetricOut(BaseModel):
@@ -50,7 +51,19 @@ class RunOut(BaseModel):
     name: str | None 
     submitted_at: datetime | None
 
+    status: RunStatusEnum | None
     run_costs: list["RunCostOut"] 
+
+class RunIn(BaseModel):
+  stage_id: int
+  author: str | None
+  link: str
+  name: str
+  primary_score: int
+  secondary_score: int | None
+  units: list[UnitModel]
+  flags: ResultFlags | None
+  submitted_by: str | None
 
 class RunCostOut(BaseModel):
     cost_id: int | None 
@@ -61,16 +74,9 @@ class TeamOut(BaseModel):
     name: str | None 
     units: list["UnitOut"] | None
 
-class UnitOut(BaseModel):
+class UnitOut(UnitModel):
     id: int | None
-
     # char: "CharOut"
-    char_id: int | None 
-    char_eidolon: int | None
-
-    lc_id: int | None
-    # lc: "LightconeOut"
-    lc_superimposition: int | None
 
 class CharOut(BaseModel):
     id: int | None

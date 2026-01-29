@@ -15,6 +15,11 @@ class ResultFlags(Flag):
   revive = auto()
   nohit = auto()
 
+class RunStatusEnum(StrEnum):
+  Pending = "Pending"
+  Approved = "Approved"
+  Rejected = "Rejected"
+
 class VideoPlatformEnum(Enum):
   Bilibili = 1
   Youtube = 2

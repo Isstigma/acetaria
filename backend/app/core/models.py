@@ -118,34 +118,66 @@ class Run(SQLModel, table=True):
   primary_score: int | None = Field(default=None, nullable=False) #in future it may be more than 2 and an additional relation will be needed
   secondary_score: int | None = Field(default=None, nullable=True)
   flags: ResultFlags | None = Field(default=None, nullable=True)
-
   
   author: str | None = Field(default=None, nullable=False)
   link: str | None = Field(default=None, nullable=False)
   name: str | None = Field(default=None, nullable=True)
   platform: VideoPlatformEnum | None = Field(default=None, nullable=True)
 
-  run_costs: list["RunCost"] = Relationship(back_populates="run")
+  run_costs: list["RunCost"] | None = Relationship(back_populates="run")
 
 class Cost(SQLModel, table=True):
   __tablename__ = "cost"
   id: int | None = Field(default=None, primary_key=True, nullable=False)
   name: str | None = Field(default=None, nullable=False, unique=True)
 
-  run_costs: list["RunCost"] = Relationship(back_populates="cost")
+  # is_auto: bool | None = Field(default=False, nullable=False, sa_column_kwargs={"server_default": text("false")}, 
+  #                              description="Whether this cost is calculated on run insertion or triggered manually")
+
+  run_costs: list["RunCost"] | None = Relationship(back_populates="cost")
+  # cost_chars: list["CostChar"] | None = Relationship(back_populates="cost")
+  # cost_groups: list["CostGroup"] | None = Relationship(back_populates="cost")
   #todo extend scoring, mb integrate with pvp balancing
+
+# class CostGroup(SQLModel, table=True, description="Groups of costs, unimplemented for now, placeholder"):
+#   __tablename__ = "cost_group"
+#   id: int | None = Field(default=None, primary_key=True, nullable=False)
+#   name: str | None = Field(default=None, nullable=False, unique=True)
+
+#   cost: Cost | None = Relationship(back_populates="cost_groups")
+
+# class CostChar(SQLModel, table=True):
+#   __tablename__ = "cost_char"
+#   id: int | None = Field(default=None, primary_key=True, nullable=False)
+#   cost: Cost | None = Relationship(back_populates="cost_chars")
+#   cost_id: int | None = Field(default=None, nullable=False, foreign_key="cost.id")
+
+#   char: Char = Relationship(back_populates="cost_chars")
+#   char_id: int | None = Field(default=None, nullable=False, foreign_key="char.id")
+
+#   cost_char_eidolons: list["CostCharEidolon"] | None = Relationship(back_populates="costChar")
+
+# class CostCharEidolon(SQLModel, table=True):
+#   __tablename__ = "cost_char_eidolon"
+#   cost_char_id: int | None = Field(default=None, nullable=False, foreign_key="cost_char.id", primary_key=True)
+#   eidolon: int | None = Field(default=None, nullable=False, primary_key=True)
+
+#   value: int | None = Field(default=None, nullable=False)
+
+#   costChar: CostChar | None = Relationship(back_populates="cost_char_eidolons")
 
 class RunCost(SQLModel, table=True):
   __tablename__ = "run_cost"
 
-  run: Run = Relationship(back_populates="run_costs")
   run_id: uuid.UUID | None = Field(default=None, nullable=False, foreign_key="run.id", primary_key=True)
 
-  cost: Cost = Relationship(back_populates="run_costs")
   cost_id: int | None = Field(default=None, nullable=False, foreign_key="cost.id", primary_key=True)
 
-  value: Decimal | None = Field(default=None, nullable=False)
+  value: int | None = Field(default=None, nullable=False)
 
+  run: Run = Relationship(back_populates="run_costs")
+  cost: Cost = Relationship(back_populates="run_costs")
+  
 class Submissions(SQLModel, table=True):
   __tablename__ = "submissions"
 

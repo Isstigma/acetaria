@@ -7,7 +7,7 @@ from app.core.db import get_session
 from app.schemas.common import Page
 from app.schemas.runs import LatestRunCardOut, MetricOut, RunIn, RunOut
 from app.schemas.media import VideoOut
-from app.core.models import Char, Run, Team, Unit
+from app.core.models import Char, Cost, Run, RunCost, Team, Unit
 from app.core.enums import ElementEnum, PathEnum, RunStatusEnum
 
 router = APIRouter(tags=["runs"])
@@ -20,46 +20,31 @@ DEFAULT_VIDEO = VideoOut(
     thumbnailUrl="https://cdn.acetaria.example/thumbnails/placeholder.jpg",
 )
 
+LTD_CHARS = [1415,1321,1112,1014,1005,1015,1006,1306,1204,1305,1220,1307,1205,1310,1225,1221,1308,1313,1212,1102,1208,1203,1222,1403,1412,1303,1217,1314,1317,1410,1404,1218,1402,1302,1304,1401,1405,1315,1309,1414,1406,1409,1408,1413,1407,1213]
+STD_CHARS = [1107,1004,1104,1003,1101,1209,1211] 
 
-@router.get("/runs/latest", response_model=Page[LatestRunCardOut])
-async def latest_runs(
-    limit: int = Query(default=10, ge=1, le=50),
-    # db: AsyncIOMotorDatabase = Depends(get_db),
-):
-    # total = await db.runs.count_documents({})
-    # cursor = db.runs.find({}).sort("publishedAt", -1).limit(limit)
+LTD_LCS = [23051,23050,23024,23030,23029,23008,23001,23007,23006,23015,23020,23010,23021,23031,23026,23014,23023,23017,23019,23022,23027,23032,23011,23028,23025,23009,23018,23045,23048,23040,23044,23043,23041,23038,23046,23037,23035,23042,23047,23036,23034] 
+STD_LCS = [23003,23004,23005,23000,23002,23012,23013] 
 
-    items = []
-    # async for doc in cursor:
-    #     metric_doc = doc.get("metric") or {"type": "cycles", "cycles": 999}
-    #     metric = MetricOut(
-    #         type=metric_doc["type"],
-    #         cycles=metric_doc.get("cycles"),
-    #         timeMs=metric_doc.get("timeMs"),
-    #     )
-    #     video_raw = doc.get("video")
-    #     video = DEFAULT_VIDEO if not isinstance(video_raw, dict) else VideoOut(**video_raw)
+def getUnitCost(unit: Unit) -> tuple[int, int]:
+    ltd_cost = 0
+    std_cost = 0
+    
+    if unit.char_id in LTD_CHARS:
+      ltd_cost += (unit.char_eidolon + 1)
+    elif unit.char_id in STD_CHARS:
+      std_cost += (unit.char_eidolon + 1)
+        
+    if unit.lc_id in LTD_LCS:
+      ltd_cost += unit.lc_superimposition
+    elif unit.lc_id in STD_LCS:
+      std_cost += unit.lc_superimposition
 
-    #     items.append(
-    #         LatestRunCardOut(
-    #             runId=doc.get("runId", "run_unknown"),
-    #             gameSlug=doc.get("gameSlug", "hsr"),
-    #             gameName=doc.get("gameName", "Honkai: Star Rail"),
-    #             modeSlug=doc.get("modeSlug", "memory-of-chaos"),
-    #             modeName=doc.get("modeName", "Memory of Chaos"),
-    #             title=doc.get("title", "Untitled Run"),
-    #             place=int(doc.get("place", 999)),
-    #             metric=metric,
-    #             playerName=doc.get("playerName", "Unknown"),
-    #             publishedAt=doc.get("publishedAt") or datetime.now(timezone.utc),
-    #             video=video,
-    #         )
-    #     )
-
-    return Page(items=items, page=1, pageSize=limit, total=0)#todo upd total
+    return (ltd_cost, std_cost)
+ 
 
 @router.get("/runs/{stage_id}", response_model=list[RunOut])
-async def runs_by_entry(stage_id: int,                         
+async def runs_by_stage_id(stage_id: int,                         
                         session: Session = Depends(get_session),
                         paths: Annotated[list[PathEnum] | None, Query()] = None,
                         elements: Annotated[list[ElementEnum] | None, Query()] = None,
@@ -90,6 +75,11 @@ async def submit_run(
   request: RunIn = Body()
 ):
   units = []
+  std_cost = 0
+  ltd_cost = 0
+  std_cost_entity = session.exec(select(Cost).where(Cost.name.ilike("%Standard%"))).first()
+  ltd_cost_entity = session.exec(select(Cost).where(Cost.name.ilike("%Limited%"))).first()
+  print(std_cost_entity, ltd_cost_entity)
   for unit in request.units:
     unit = Unit(char_id = unit.char_id, char_eidolon=unit.char_eidolon, 
                 lc_id=unit.lc_id, lc_superimposition=unit.lc_superimposition)
@@ -101,6 +91,14 @@ async def submit_run(
     if existingUnit:
       unit = existingUnit
     units.append(unit)
+    unit_std_cost, unit_ltd_cost = getUnitCost(unit)
+    std_cost += unit_std_cost
+    ltd_cost += unit_ltd_cost
+
+  run_costs : list[RunCost] = []
+  run_costs.append(RunCost(cost=std_cost_entity, cost_id=std_cost_entity.id, value=std_cost))
+  run_costs.append(RunCost(cost=ltd_cost_entity, cost_id=ltd_cost_entity.id, value=ltd_cost))
+  
   team = Team(name=request.name, units=units)
   run = Run(
     team=team,
@@ -111,8 +109,9 @@ async def submit_run(
     author=request.author,
     link=request.link,
     name=request.name,
-    status=RunStatusEnum.Pending,
+    status=RunStatusEnum.Pending, 
     submitted_by=request.submitted_by,
+    run_costs=run_costs
   )
   session.add(run)
   session.commit()

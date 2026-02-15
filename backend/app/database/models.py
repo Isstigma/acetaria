@@ -5,7 +5,7 @@ import uuid
 from fastapi import Depends, FastAPI, HTTPException, Query
 from sqlmodel import Field, Relationship, Session, UniqueConstraint, SQLModel, create_engine, select, text
 
-from app.core.enums import ElementEnum, GameModeKindEnum, PathEnum, ResultFlags, ResultKindEnum, RunStatusEnum, VideoPlatformEnum
+from app.database.enums import ElementEnum, GameModeKindEnum, PathEnum, ResultFlags, ResultKindEnum, RunStatusEnum, VideoPlatformEnum
 
 class Char (SQLModel, table=True):
   __tablename__ = "char"

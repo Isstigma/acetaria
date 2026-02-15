@@ -1,6 +1,7 @@
+# TODO: enums will need to be rewritten in uppercase
 from enum import Enum, Flag, StrEnum, auto
 
-class GameModeKindEnum(StrEnum):
+class GameModeKindEnum(StrEnum): 
   Unknown = "Unknown"
   Moc12 = "Moc12"
   Pf = "Pf"

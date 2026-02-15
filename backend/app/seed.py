@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 from datetime import datetime, timedelta, timezone
-from app.core.db import get_session
+from app.database.session import get_session
 
 HSR_SLUG = "hsr"
 HSR_NAME = "Honkai: Star Rail"
@@ -33,7 +33,7 @@ async def ensure_seeded() -> None:
 async def seed_minimum(db) -> None:
     """Idempotently upsert minimum docs needed for the frontend to work."""
     now = datetime.now(timezone.utc)
-
+ 
     await db.games.update_one(
         {"slug": HSR_SLUG},
         {"$set": {"slug": HSR_SLUG, "name": HSR_NAME}},

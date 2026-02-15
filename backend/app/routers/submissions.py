@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
-from app.core.db import get_session
+from app.database.session import get_session
 
 
 router = APIRouter(tags=["submissions"])

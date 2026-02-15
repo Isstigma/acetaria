@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlmodel import Session, select
-from app.core.db import get_session
+from app.database.session import get_session
 from app.schemas.common import Page
-from app.schemas.games import GameOut
-from app.core.models import Char
+# from app.schemas.games import GameOut
+from app.database.models import Char
 
 router = APIRouter(tags=["games"])
 

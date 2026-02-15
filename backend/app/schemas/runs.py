@@ -1,12 +1,11 @@
 from decimal import Decimal
 import uuid
 from pydantic import BaseModel, Field
-from typing import Literal, Optional
+from typing import Literal, Optional, List
 from datetime import datetime
 from app.schemas.media import VideoOut
-from app.core.enums import ResultFlags, RunStatusEnum
+from app.database.enums import ResultFlags, RunStatusEnum
 from app.schemas.common import UnitModel
-
 
 class MetricOut(BaseModel):
     type: Literal["cycles", "time"]
@@ -20,6 +19,9 @@ class MetricOut(BaseModel):
     @staticmethod
     def time_metric(v: int) -> "MetricOut":
         return MetricOut(type="time", cycles=None, timeMs=v)
+
+    # не обязательно for from_orm if you don't use ORM with MetricOut
+    model_config = {"from_attributes": True}
 
 
 class LatestRunCardOut(BaseModel):
@@ -35,66 +37,87 @@ class LatestRunCardOut(BaseModel):
     publishedAt: datetime
     video: VideoOut
 
-class RunOut(BaseModel):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    model_config = {"from_attributes": True}
 
-    team: "TeamOut" 
-
-    game_mode_entry_id: int | None 
-
-    primary_score: Decimal | None 
-    secondary_score: Decimal | None 
-    flags: ResultFlags | None 
-
-    author: str | None 
-    link: str | None 
-    name: str | None 
-    submitted_at: datetime | None
-
-    status: RunStatusEnum | None
-    run_costs: list["RunCostOut"] 
-
-class RunIn(BaseModel):
-  stage_id: int
-  author: str | None
-  link: str
-  name: str
-  primary_score: int
-  secondary_score: int | None
-  units: list[UnitModel]
-  flags: ResultFlags | None
-  submitted_by: str | None
 
 class RunCostOut(BaseModel):
-    cost_id: int | None 
-    value: Decimal | None
+    cost_id: Optional[int] = None
+    value: Optional[Decimal] = None
 
-class TeamOut(BaseModel):
-    id: int | None 
-    name: str | None 
-    units: list["UnitOut"] | None
+    model_config = {"from_attributes": True}
+
 
 class UnitOut(UnitModel):
-    id: int | None
-    # char: "CharOut"
+    id: Optional[int] = None
+
+    model_config = {"from_attributes": True}
+
+
+class TeamOut(BaseModel):
+    id: Optional[int] = None
+    name: Optional[str] = None
+    units: Optional[List[UnitOut]] = None
+
+    model_config = {"from_attributes": True}
+
 
 class CharOut(BaseModel):
-    id: int | None
-    name: str 
-    icon_url: str | None 
-    rarity: int 
+    id: Optional[int] = None
+    name: str
+    icon_url: Optional[str] = None
+    rarity: int
+
+    model_config = {"from_attributes": True}
+
 
 class LightconeOut(BaseModel):
-    id: int | None 
-    name: str 
+    id: Optional[int] = None
+    name: str
     rarity: int
     icon_url: str
-    sig_of_char_id: int | None
+    sig_of_char_id: Optional[int] = None
 
-class CharFilterIn(BaseModel): #todo, unused as of now
-    id: int | None
-    eFrom: int | None
-    eTo: int | None
-    lcId: int | None
-    sFrom: int | None
-    sTo: int | None
+    model_config = {"from_attributes": True}
+
+
+class RunOut(BaseModel):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4)
+
+    team: TeamOut
+
+    game_mode_entry_id: Optional[int] = None
+
+    primary_score: Optional[Decimal] = None
+    secondary_score: Optional[Decimal] = None
+    flags: Optional[ResultFlags] = None
+
+    author: Optional[str] = None
+    link: Optional[str] = None
+    name: Optional[str] = None
+    submitted_at: Optional[datetime] = None
+
+    status: Optional[RunStatusEnum] = None
+    run_costs: list[RunCostOut] = []
+
+    model_config = {"from_attributes": True}
+
+
+class RunIn(BaseModel):
+    stage_id: int
+    author: Optional[str] = None
+    link: str
+    name: str
+    primary_score: int
+    secondary_score: Optional[int] = None
+    units: list[UnitModel]
+    flags: Optional[ResultFlags] = None
+    submitted_by: Optional[str] = None
+
+
+class CharFilterIn(BaseModel):  # todo, unused as of now
+    id: Optional[int] = None
+    eFrom: Optional[int] = None
+    eTo: Optional[int] = None
+    lcId: Optional[int] = None
+    sFrom: Optional[int] = None
+    sTo: Optional[int] = None

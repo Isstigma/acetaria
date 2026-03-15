@@ -186,3 +186,12 @@ class Submissions(SQLModel, table=True):
   description: str | None = Field(default=None, nullable=True)
 # id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 # sa_column_kwargs={"server_default": text("CURRENT_TIMESTAMP")}
+
+class SubmissionAuthorsBlacklist(SQLModel, table=True):
+  __tablename__ = "submission_authors_blacklist"
+
+  url: str | None = Field(default=None, primary_key=True)
+  reason: str | None = Field(default=None, nullable=True)
+  name: str | None = Field(default=None, nullable=True)
+  blacklisted_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+  blacklisted_by: str | None = Field(default=None, nullable=True)

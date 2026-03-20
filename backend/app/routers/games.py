@@ -4,13 +4,14 @@ from app.core.db import get_session
 from app.schemas.common import Page
 from app.schemas.games import GameOut
 from app.core.models import Char
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(tags=["games"])
 
 
 # @router.get("/games", response_model=Page[GameOut])
 # async def list_games(page: int = 1, pageSize: int = 50, 
-#                      session: Session = Depends(get_session)
+#                      session: AsyncSession = Depends(get_session)
 #                      ):
 #     q = {}
 #     # total = await db.games.count_documents(q)

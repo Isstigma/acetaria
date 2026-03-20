@@ -3,12 +3,14 @@ from fastapi import APIRouter, Body, Depends, Path, Query
 from datetime import datetime, timezone
 
 from sqlmodel import Session, Session, select
+from sqlalchemy.orm import joinedload, noload, selectinload
 from app.core.db import get_session
 from app.schemas.common import Page
 from app.schemas.runs import LatestRunCardOut, MetricOut, RunIn, RunOut
 from app.schemas.media import VideoOut
 from app.core.models import Char, Cost, Run, RunCost, Team, Unit
 from app.core.enums import ElementEnum, PathEnum, RunStatusEnum
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(tags=["runs"])
 
@@ -45,16 +47,20 @@ def getUnitCost(unit: Unit) -> tuple[int, int]:
 
 @router.get("/runs/{stage_id}", response_model=list[RunOut])
 async def runs_by_stage_id(stage_id: int,                         
-                        session: Session = Depends(get_session),
+                        session: AsyncSession = Depends(get_session),
                         paths: Annotated[list[PathEnum] | None, Query()] = None,
                         elements: Annotated[list[ElementEnum] | None, Query()] = None,
                         chars: Annotated[list[int] | None, Query()] = None
     ):
     query  = (select(Run)
-        .join(Team)
-        .join(Unit, Team.units)
-        .join(Char)
-        .where(Run.game_mode_entry_id == stage_id)
+      .where(Run.game_mode_entry_id == stage_id)
+      .options(
+        joinedload(Run.team)
+        .joinedload(Team.units)
+        .joinedload(Unit.char)
+        ,joinedload(Run.run_costs)
+        ,noload(Run.game_mode_entry)
+        )
     )
 
     if chars is not None:
@@ -64,14 +70,14 @@ async def runs_by_stage_id(stage_id: int,
             query = query.where(Char.path.in_(paths))
         if elements is not None:
             query = query.where(Char.element.in_(elements))
-
-    runs = session.exec(query).all()
+    # print(query)
+    runs = (await session.execute(query)).unique().scalars().all()
 
     return runs
 
 @router.post("/runs")
 async def submit_run(
-  session: Session = Depends(get_session),
+  session: AsyncSession = Depends(get_session),
   request: RunIn = Body()
 ):
   units = []
@@ -122,9 +128,9 @@ async def submit_run(
 async def reject_submission(
   submissionId: str, 
   rejectedBy: str,
-  session: Session = Depends(get_session)
+  session: AsyncSession = Depends(get_session)
 ):
-  run = session.exec(select(Run).where(Run.id == submissionId)).first()
+  run = (await session.execute(select(Run).where(Run.id == submissionId))).scalar()
   run.status = RunStatusEnum.Rejected
   run.reviewed_by = rejectedBy
   session.commit()
@@ -133,9 +139,9 @@ async def reject_submission(
 async def approve_submission(
   submissionId: str,
   approvedBy: str,
-  session: Session = Depends(get_session)
+  session: AsyncSession = Depends(get_session)
 ):
-  run = session.exec(select(Run).where(Run.id == submissionId)).first()
+  run = (await session.execute(select(Run).where(Run.id == submissionId))).scalar()
   run.status = RunStatusEnum.Approved
   run.reviewed_by = approvedBy
   session.commit()

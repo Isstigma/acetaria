@@ -12,8 +12,8 @@ from app.routers.costs import router as costs_router
 from app.routers.submissions import router as submissions_router
 from app.routers.blacklist import router as blacklist_router
 from app.seed import ensure_seeded
-from app.core.db import init_db
 from app.core.models import *
+from app.core.db import init_models
 
 app = FastAPI(title="Acetaria API", version="1.0.0")
 
@@ -44,6 +44,6 @@ async def healthz():
 
 @app.on_event("startup")
 async def startup_seed():
-    init_db()
+    await init_models()
     if settings.acetaria_auto_seed == 1:
         await ensure_seeded()

@@ -43,7 +43,7 @@ class TeamUnitLink(SQLModel, table=True):
 class Unit(SQLModel, table=True): #a single element of a team. 
   #In HSR - char with specific eidolon and optional lc with a corresponding superimposition
   __tablename__ = "unit"
-  __table_args__ = (UniqueConstraint("char_id", "char_eidolon", "lc_id", "lc_superimposition", name="unit_uidx"),)
+  __table_args__ = (UniqueConstraint("char_id", "char_eidolon", "lc_id", "lc_superimposition", "is_main", name="unit_uidx"),)
 
   id: int | None = Field(default=None, primary_key=True)
 
@@ -56,6 +56,8 @@ class Unit(SQLModel, table=True): #a single element of a team.
   lc: Lightcone | None = Relationship(back_populates="units")
 
   lc_superimposition: int | None = Field(default=None, nullable=True)
+
+  is_main: bool | None = Field(default=False, nullable=False, primary_key=True, sa_column_kwargs={"server_default": text("false")}) #whether this unit is the main dps of the team, used for filtering and sorting in some gamemodes. In future may be extended with a role enum if needed
 
   teams: list["Team"] = Relationship(back_populates="units", link_model=TeamUnitLink)
 
@@ -123,6 +125,8 @@ class Run(SQLModel, table=True):
   link: str | None = Field(default=None, nullable=False)
   name: str | None = Field(default=None, nullable=True)
   platform: VideoPlatformEnum | None = Field(default=None, nullable=True)
+
+  submission_ref: str | None = Field(default=None, nullable=True, unique=True)
 
   run_costs: list["RunCost"] | None = Relationship(back_populates="run")
 

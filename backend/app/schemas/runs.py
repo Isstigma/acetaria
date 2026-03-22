@@ -76,6 +76,7 @@ class TeamOut(BaseModel):
 
 class UnitOut(UnitModel):
     id: int | None
+    is_main: bool | None
     # char: "CharOut"
 
 class CharOut(BaseModel):

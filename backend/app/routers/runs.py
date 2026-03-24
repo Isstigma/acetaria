@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Optional
 from fastapi import APIRouter, Body, Depends, Path, Query
 from datetime import datetime, timezone
 
@@ -46,14 +46,16 @@ def getUnitCost(unit: Unit) -> tuple[int, int]:
  
 
 @router.get("/runs/{stage_id}", response_model=list[RunOut])
-async def runs_by_stage_id(stage_id: int,                         
+@router.get("/runs", response_model=list[RunOut])
+async def runs_by_stage_id(stage_id: Optional[int]  = None,                         
                         session: AsyncSession = Depends(get_session),
                         paths: Annotated[list[PathEnum] | None, Query()] = None,
                         elements: Annotated[list[ElementEnum] | None, Query()] = None,
-                        chars: Annotated[list[int] | None, Query()] = None
+                        chars: Annotated[list[int] | None, Query()] = None,
+                        id : Annotated[str | None, Query()] = None,
+                        author_name : Annotated[str | None, Query()] = None
     ):
     query  = (select(Run)
-      .where(Run.game_mode_entry_id == stage_id)
       .options(
         joinedload(Run.team)
         .joinedload(Team.units)
@@ -62,6 +64,15 @@ async def runs_by_stage_id(stage_id: int,
         ,noload(Run.game_mode_entry)
         )
     )
+
+    if stage_id is not None:      
+      query = query.where(Run.game_mode_entry_id == stage_id)
+
+    if id is not None:
+      query = query.where(Run.id == id)
+
+    if author_name is not None:
+      query = query.where(Run.author.ilike(f"%{author_name}%"))
 
     if chars is not None:
         query = query.where(Char.id.in_(chars))

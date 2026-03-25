@@ -3,7 +3,8 @@ from decimal import Decimal
 from enum import Enum, Flag, auto
 import uuid
 from fastapi import Depends, FastAPI, HTTPException, Query
-from sqlmodel import Field, Relationship, Session, UniqueConstraint, SQLModel, create_engine, select, text
+from sqlmodel import Column, Field, Relationship, Session, UniqueConstraint, SQLModel, create_engine, select, text
+from sqlalchemy import Column, Enum as SqlEnum
 
 from app.core.enums import ElementEnum, GameModeKindEnum, PathEnum, ResultFlags, ResultKindEnum, RunStatusEnum, VideoPlatformEnum
 
@@ -45,7 +46,7 @@ class Unit(SQLModel, table=True): #a single element of a team.
   __tablename__ = "unit"
   __table_args__ = (UniqueConstraint("char_id", "char_eidolon", "lc_id", "lc_superimposition", "is_main", name="unit_uidx"),)
 
-  id: int | None = Field(default=None, primary_key=True)
+  id: int | None = Field(default=None, primary_key=True, sa_column_kwargs={"autoincrement": True})
 
   char_id: int | None = Field(default=None, nullable=False, foreign_key="char.id")
   char: Char | None = Relationship(back_populates="units")
@@ -67,7 +68,7 @@ class Team(SQLModel, table=True):
   id: int | None = Field(default=None, primary_key=True)
   name: str | None = Field(default=None, nullable=True)
 
-  units: list["Unit"] | None = Relationship(back_populates="teams", link_model=TeamUnitLink)
+  units: list["Unit"] | None = Relationship(back_populates="teams", link_model=TeamUnitLink,  sa_relationship_kwargs={'lazy': 'selectin'})
   runs: list["Run"] | None = Relationship(back_populates="team")
 
 
@@ -119,7 +120,7 @@ class Run(SQLModel, table=True):
 
   primary_score: int | None = Field(default=None, nullable=False) #in future it may be more than 2 and an additional relation will be needed
   secondary_score: int | None = Field(default=None, nullable=True)
-  flags: ResultFlags | None = Field(default=None, nullable=True)
+  flags: ResultFlags | None = Field(default=None, sa_column=Column(SqlEnum(ResultFlags), nullable=True))#todo check if this works as intended with the custom type and if it is queryable, may need some custom comparator for the flag operations
   
   author: str | None = Field(default=None, nullable=False)
   link: str | None = Field(default=None, nullable=False)

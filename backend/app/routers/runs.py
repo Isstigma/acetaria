@@ -1,6 +1,9 @@
+import json
 from typing import Annotated, Optional
 from fastapi import APIRouter, Body, Depends, Path, Query
 from datetime import datetime, timezone
+import httpx
+import requests
 
 from sqlmodel import Session, Session, select
 from sqlalchemy.orm import joinedload, noload, selectinload
@@ -9,7 +12,7 @@ from app.schemas.common import Page
 from app.schemas.runs import LatestRunCardOut, MetricOut, RunIn, RunOut
 from app.schemas.media import VideoOut
 from app.core.models import Char, Cost, Run, RunCost, Team, Unit
-from app.core.enums import ElementEnum, PathEnum, RunStatusEnum
+from app.core.enums import ElementEnum, PathEnum, ResultFlags, RunStatusEnum
 from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(tags=["runs"])
@@ -22,10 +25,10 @@ DEFAULT_VIDEO = VideoOut(
     thumbnailUrl="https://cdn.acetaria.example/thumbnails/placeholder.jpg",
 )
 
-LTD_CHARS = [1415,1321,1112,1014,1005,1015,1006,1306,1204,1305,1220,1307,1205,1310,1225,1221,1308,1313,1212,1102,1208,1203,1222,1403,1412,1303,1217,1314,1317,1410,1404,1218,1402,1302,1304,1401,1405,1315,1309,1414,1406,1409,1408,1413,1407,1213]
+LTD_CHARS = [1415,1321,1112,1014,1005,1015,1006,1306,1204,1305,1220,1307,1205,1310,1225,1221,1308,1313,1212,1102,1208,1203,1222,1403,1412,1303,1217,1314,1317,1410,1404,1218,1402,1302,1304,1401,1405,1315,1309,1414,1406,1409,1408,1413,1407,1213,1501,1502,1504]
 STD_CHARS = [1107,1004,1104,1003,1101,1209,1211] 
 
-LTD_LCS = [23051,23050,23024,23030,23029,23008,23001,23007,23006,23015,23020,23010,23021,23031,23026,23014,23023,23017,23019,23022,23027,23032,23011,23028,23025,23009,23018,23045,23048,23040,23044,23043,23041,23038,23046,23037,23035,23042,23047,23036,23034] 
+LTD_LCS = [23051,23050,23024,23030,23029,23008,23001,23007,23006,23015,23020,23010,23021,23031,23026,23014,23023,23017,23019,23022,23027,23032,23011,23028,23025,23009,23018,23045,23048,23040,23044,23043,23041,23038,23046,23037,23035,23042,23047,23036,23034, 23049, 23052, 23039, 23016, 23056, 23033, 22006, 23054, 23053] 
 STD_LCS = [23003,23004,23005,23000,23002,23012,23013] 
 
 def getUnitCost(unit: Unit) -> tuple[int, int]:
@@ -53,7 +56,8 @@ async def runs_by_stage_id(stage_id: Optional[int]  = None,
                         elements: Annotated[list[ElementEnum] | None, Query()] = None,
                         chars: Annotated[list[int] | None, Query()] = None,
                         id : Annotated[str | None, Query()] = None,
-                        author_name : Annotated[str | None, Query()] = None
+                        author_name : Annotated[str | None, Query()] = None,
+                        include_pending: Annotated[bool, Query()] = False
     ):
     query  = (select(Run)
       .options(
@@ -64,6 +68,9 @@ async def runs_by_stage_id(stage_id: Optional[int]  = None,
         ,noload(Run.game_mode_entry)
         )
     )
+
+    if not include_pending:
+        query = query.where(Run.status == RunStatusEnum.Approved)
 
     if stage_id is not None:      
       query = query.where(Run.game_mode_entry_id == stage_id)
@@ -94,17 +101,18 @@ async def submit_run(
   units = []
   std_cost = 0
   ltd_cost = 0
-  std_cost_entity = session.exec(select(Cost).where(Cost.name.ilike("%Standard%"))).first()
-  ltd_cost_entity = session.exec(select(Cost).where(Cost.name.ilike("%Limited%"))).first()
+  std_cost_entity = (await session.execute(select(Cost).where(Cost.name.ilike("%Standard%")))).scalar_one()
+  ltd_cost_entity = (await session.execute(select(Cost).where(Cost.name.ilike("%Limited%")))).scalar_one()
   print(std_cost_entity, ltd_cost_entity)
-  for unit in request.units:
+  for i, unit in enumerate(request.units):
     unit = Unit(char_id = unit.char_id, char_eidolon=unit.char_eidolon, 
-                lc_id=unit.lc_id, lc_superimposition=unit.lc_superimposition)
-    existingUnit = session.query(Unit).filter_by(
+                lc_id=unit.lc_id, lc_superimposition=unit.lc_superimposition, is_main=(i==0))
+    existingUnit = (await session.execute(select(Unit).filter_by(
        char_id=unit.char_id, 
        char_eidolon=unit.char_eidolon,
        lc_id=unit.lc_id, 
-       lc_superimposition=unit.lc_superimposition).first()
+       lc_superimposition=unit.lc_superimposition,
+       is_main=unit.is_main))).scalar_one_or_none()
     if existingUnit:
       unit = existingUnit
     units.append(unit)
@@ -112,17 +120,28 @@ async def submit_run(
     std_cost += unit_std_cost
     ltd_cost += unit_ltd_cost
 
+
+  print(units)
   run_costs : list[RunCost] = []
+  print(std_cost_entity, ltd_cost_entity)
   run_costs.append(RunCost(cost=std_cost_entity, cost_id=std_cost_entity.id, value=std_cost))
   run_costs.append(RunCost(cost=ltd_cost_entity, cost_id=ltd_cost_entity.id, value=ltd_cost))
   
-  team = Team(name=request.name, units=units)
+  team = Team(name=request.name)
+  session.add(team)
+  session.add_all(units)
+  await session.commit()
+  await session.refresh(team)
+  for unit in units:
+    await session.refresh(unit)#todo fix refresh all units if possible, currently it only works because of the way the session is configured with expire_on_commit=False, but it is still not ideal
+  team.units = units
+
   run = Run(
     team=team,
     game_mode_entry_id=request.stage_id,
     primary_score=request.primary_score,
     secondary_score=request.secondary_score,
-    flags=request.flags,
+    flags=request.flags if request.flags != ResultFlags(0) else None, #hack to convert 0 to None for better db storage, since 0 is the default value for int and it is not possible to distinguish between 0 and None without this hack
     author=request.author,
     link=request.link,
     name=request.name,
@@ -130,9 +149,28 @@ async def submit_run(
     submitted_by=request.submitted_by,
     run_costs=run_costs
   )
+
+
   session.add(run)
-  session.commit()
-  session.refresh(run)
+  await session.commit()
+  await session.refresh(run)
+
+  session.add_all(run_costs)
+  await session.commit()
+  
+  # Call external bot service
+  async with httpx.AsyncClient() as client:
+  #print(
+    await client.post(
+    # 'http://httpbin.org/post',
+    'http://localhost:5000/submit',
+    data= 
+    
+       json.dumps({"embeds": [json.loads(request.embed_discord)], "content": str(run.id)})
+    
+  )#.prepare().body.decode('utf8')
+  #)
+  
   return {"run_id": run.id}
 
 @router.delete("/runs/reject/{submissionId}/{rejecteddBy}")

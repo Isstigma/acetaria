@@ -56,6 +56,7 @@ class RunOut(BaseModel):
 
 class RunIn(BaseModel):
   stage_id: int
+  game_mode_entry_id: int | None
   author: str | None
   link: str
   name: str
@@ -64,6 +65,8 @@ class RunIn(BaseModel):
   units: list[UnitModel]
   flags: ResultFlags | None
   submitted_by: str | None
+  submission_ref: str | None
+  embed_discord: str | None #for some reason it is generated on frontend which is bullshit but w/e
 
 class RunCostOut(BaseModel):
     cost_id: int | None 

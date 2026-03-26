@@ -111,6 +111,7 @@ class Run(SQLModel, table=True):
   submitted_at: datetime | None = Field(default_factory=datetime.utcnow, nullable=False)
   submitted_by: str | None = Field(default=None, nullable=False)
   reviewed_by: str | None = Field(default=None, nullable=True) 
+  reviewed_at: datetime | None = Field(default=None, nullable=True)
 
   team: Team | None = Relationship(back_populates="runs")
   team_id: int | None = Field(default=None, nullable=False, foreign_key="team.id")

@@ -4,6 +4,7 @@ from fastapi import APIRouter, Body, Depends, Path, Query
 from datetime import datetime, timezone
 import httpx
 import requests
+import aiohttp
 
 from sqlmodel import Session, Session, select
 from sqlalchemy.orm import joinedload, noload, selectinload
@@ -16,6 +17,8 @@ from app.core.enums import ElementEnum, PathEnum, ResultFlags, RunStatusEnum
 from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(tags=["runs"])
+
+WEBHOOK_URL = 'https://discord.com/api/webhooks/1462751270883426365/esb5S9OS9m7adRtfaf2FI6xUHk5c7pxx6vHK7DrHK8T3gvrAXsaT5XoUpUt1JctpVKGF'
 
 DEFAULT_VIDEO = VideoOut(
     platform="youtube",
@@ -158,18 +161,24 @@ async def submit_run(
   session.add_all(run_costs)
   await session.commit()
   
-  # Call external bot service
-  async with httpx.AsyncClient() as client:
-  #print(
-    await client.post(
-    # 'http://httpbin.org/post',
-    'https://acetaria-bot.acetaria.fyi',
-    data= 
-    
-       json.dumps({"embeds": [json.loads(request.embed_discord)], "content": str(run.id)})
-    
-  )#.prepare().body.decode('utf8')
-  #)
+  try:
+      # print(request)
+      with aiohttp.MultipartWriter('form-data') as mp:
+          request_body = json.dumps({"embeds": [json.loads(request.embed_discord)], "content": str(run.id)})
+          print(request_body)
+          part = mp.append(request_body)
+          part.set_content_disposition('form-data', name='payload_json')
+          
+          async with aiohttp.ClientSession() as session:
+              async with session.post(WEBHOOK_URL, data=mp) as resp:
+                  if resp.ok:
+                      pass
+                  else:
+                      print(await resp.json())
+  except Exception as e:
+      print(f"Error in /submit: {e}")
+
+
   
   return {"run_id": run.id}
 

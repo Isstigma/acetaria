@@ -163,7 +163,7 @@ async def submit_run(
   #print(
     await client.post(
     # 'http://httpbin.org/post',
-    'http://localhost:5000/submit',
+    'https://acetaria-bot.acetaria.fyi',
     data= 
     
        json.dumps({"embeds": [json.loads(request.embed_discord)], "content": str(run.id)})

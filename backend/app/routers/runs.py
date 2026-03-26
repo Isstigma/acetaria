@@ -73,6 +73,7 @@ async def get_runs_status(
     return result
 
 @router.get("/runs/{stage_id}", response_model=list[RunOut])
+@router.get("/runs", response_model=list[RunOut])
 async def runs_by_stage_id(stage_id: Optional[int]  = None,                                                 session: AsyncSession = Depends(get_session),
                         paths: Annotated[list[PathEnum] | None, Query()] = None,
                         elements: Annotated[list[ElementEnum] | None, Query()] = None,

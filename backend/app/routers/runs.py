@@ -80,7 +80,8 @@ async def runs_by_stage_id(stage_id: Optional[int]  = None,                     
                         chars: Annotated[list[int] | None, Query()] = None,
                         id : Annotated[str | None, Query()] = None,
                         author_name : Annotated[str | None, Query()] = None,
-                        include_pending: Annotated[bool, Query()] = False
+                        include_pending: Annotated[bool, Query()] = False,
+                        refs : Annotated[list[str] | None, Query()] = None
     ):
     query  = (select(Run)
       .options(
@@ -92,6 +93,9 @@ async def runs_by_stage_id(stage_id: Optional[int]  = None,                     
         )
     )
 
+    if refs is not None:
+      query = query.where(Run.submission_ref.in_(refs))
+      
     if not include_pending:
         query = query.where(Run.status == RunStatusEnum.Approved)
 

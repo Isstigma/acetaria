@@ -41,10 +41,18 @@ class TeamUnitLink(SQLModel, table=True):
   unit_id: int | None = Field(default=None, foreign_key="unit.id", primary_key=True)
 
 
-class Unit(SQLModel, table=True): #a single element of a team. 
-  #In HSR - char with specific eidolon and optional lc with a corresponding superimposition
+class Unit(SQLModel, table=True):
   __tablename__ = "unit"
-  __table_args__ = (UniqueConstraint("char_id", "char_eidolon", "lc_id", "lc_superimposition", "is_main", name="unit_uidx"),)
+  __table_args__ = (
+      UniqueConstraint(
+          "char_id",
+          "char_eidolon",
+          "lc_id",
+          "lc_superimposition",
+          "is_main",
+          name="unit_uidx",
+      ),
+  )
 
   id: int | None = Field(default=None, primary_key=True, sa_column_kwargs={"autoincrement": True})
 
@@ -58,7 +66,31 @@ class Unit(SQLModel, table=True): #a single element of a team.
 
   lc_superimposition: int | None = Field(default=None, nullable=True)
 
-  is_main: bool | None = Field(default=False, nullable=False, primary_key=True, sa_column_kwargs={"server_default": text("false")}) #whether this unit is the main dps of the team, used for filtering and sorting in some gamemodes. In future may be extended with a role enum if needed
+  is_main: bool | None = Field(
+      default=False,
+      nullable=False,
+      sa_column_kwargs={"server_default": text("false")},
+  )
+
+  teams: list["Team"] = Relationship(back_populates="units", link_model=TeamUnitLink)
+
+  id: int | None = Field(default=None, primary_key=True, sa_column_kwargs={"autoincrement": True})
+
+  char_id: int | None = Field(default=None, nullable=False, foreign_key="char.id")
+  char: Char | None = Relationship(back_populates="units")
+
+  char_eidolon: int | None = Field(default=None, nullable=False)
+
+  lc_id: int | None = Field(default=None, nullable=True, foreign_key="lightcone.id")
+  lc: Lightcone | None = Relationship(back_populates="units")
+
+  lc_superimposition: int | None = Field(default=None, nullable=True)
+
+  is_main: bool | None = Field(
+    default=False,
+    nullable=False,
+    sa_column_kwargs={"server_default": text("false")}
+)  # not a primary key
 
   teams: list["Team"] = Relationship(back_populates="units", link_model=TeamUnitLink)
 

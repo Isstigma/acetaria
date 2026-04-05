@@ -4,7 +4,8 @@ from enum import Enum, Flag, auto
 import uuid
 from fastapi import Depends, FastAPI, HTTPException, Query
 from sqlmodel import Column, Field, Relationship, Session, UniqueConstraint, SQLModel, create_engine, select, text
-from sqlalchemy import Column, Enum as SqlEnum
+from sqlalchemy import Column, Enum as SqlEnum, JSON
+from typing import List
 
 from app.core.enums import ElementEnum, GameModeKindEnum, PathEnum, ResultFlags, ResultKindEnum, RunStatusEnum, VideoPlatformEnum
 
@@ -201,3 +202,10 @@ class SubmissionAuthorsBlacklist(SQLModel, table=True):
   name: str | None = Field(default=None, nullable=True)
   blacklisted_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
   blacklisted_by: str | None = Field(default=None, nullable=True)
+
+class EventFreeCharacter(SQLModel, table=True):
+    __tablename__ = "event_free_characters"
+
+    id: int = Field(default=None, primary_key=True)
+    event_name: str = Field(max_length=50)
+    character_names: List[str] = Field(sa_column=Column(JSON))
